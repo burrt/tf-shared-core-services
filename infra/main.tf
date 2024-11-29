@@ -27,8 +27,8 @@ resource "aws_elasticache_subnet_group" "shared-redis-cache-subnet-group" {
   name        = "shared-redis-cache-subnet-group"
   description = "Redis Cache Subnet Group"
   subnet_ids = [
-    local.subnet-private-1-id,
-    local.subnet-private-2-id
+    var.subnet_public_1_id,
+    var.subnet_private_2_id
   ]
 }
 
@@ -41,6 +41,7 @@ resource "aws_elasticache_cluster" "shared-cache" {
   port                  = 6379
   engine_version        = "7.1"
   subnet_group_name     = aws_elasticache_subnet_group.shared-redis-cache-subnet-group.name
+  security_group_ids    = [aws_security_group.elasticache_redis_traffic_sg.id]
 }
 
 # create security group for the cluster (redis traffic)

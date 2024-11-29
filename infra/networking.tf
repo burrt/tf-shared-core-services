@@ -64,35 +64,41 @@ resource "aws_security_group" "ec2_jump_box_ssh_sg" {
   name        = "ec2_jump_box_ssh_sg"
   description = "Allow SSH inbound traffic and all outbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
+  ingress {
+    # security_group_id = aws_security_group.ec2_jump_box_ssh_sg.id
+    cidr_blocks         = [aws_vpc.main_vpc.cidr_block]
+    ipv6_cidr_blocks    = [aws_vpc.main_vpc.ipv6_cidr_block]
+    protocol            = "tcp"
+    from_port           = 22
+    to_port             = 22
+    # TODO: restrict to dev laptop
+  }
+  egress {
+    # security_group_id = aws_security_group.ec2_jump_box_ssh_sg.id
+    cidr_blocks         = ["0.0.0.0/0"]
+    ipv6_cidr_blocks    = ["::/0"]
+    protocol            = "-1" # semantically equivalent to all ports
+    from_port           = 0
+    to_port             = 0
+  }
 }
 
-# Inbound rules
-resource "aws_vpc_security_group_ingress_rule" "allow_ssh_in_traffic_ipv4" {
-  security_group_id = aws_security_group.ec2_jump_box_ssh_sg.id
-  cidr_ipv4         = aws_vpc.main_vpc.cidr_block
-  ip_protocol       = "tcp"
-  from_port         = 22
-  to_port           = 22
-  # TODO: restrict to dev laptop
-}
-resource "aws_vpc_security_group_ingress_rule" "allow_ssh_in_traffic_ipv6" {
-  security_group_id = aws_security_group.ec2_jump_box_ssh_sg.id
-  cidr_ipv6         = aws_vpc.main_vpc.ipv6_cidr_block
-  ip_protocol       = "tcp"
-  from_port         = 22
-  to_port           = 22
-  # TODO: restrict to dev laptop
-}
-
-# Outbound rules
-resource "aws_vpc_security_group_egress_rule" "allow_all_out_traffic_ipv4" {
-  security_group_id = aws_security_group.ec2_jump_box_ssh_sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1" # semantically equivalent to all ports
-}
-
-resource "aws_vpc_security_group_egress_rule" "allow_all_out_traffic_ipv6" {
-  security_group_id = aws_security_group.ec2_jump_box_ssh_sg.id
-  cidr_ipv6         = "::/0"
-  ip_protocol       = "-1" # semantically equivalent to all ports
+resource "aws_security_group" "elasticache_redis_traffic_sg" {
+  name        = "elasticache_redis_traffic_sg"
+  description = "Allow TCP 6379 inbound traffic and all outbound traffic"
+  vpc_id      = aws_vpc.main_vpc.id
+  ingress {
+    security_groups = [aws_security_group.ec2_jump_box_ssh_sg.id]
+    protocol            = "tcp"
+    from_port           = 6379
+    to_port             = 6379
+  }
+  egress {
+    # security_group_id = aws_security_group.ec2_jump_box_ssh_sg.id
+    cidr_blocks         = ["0.0.0.0/0"]
+    ipv6_cidr_blocks    = ["::/0"]
+    protocol            = "-1" # semantically equivalent to all ports
+    from_port           = 0
+    to_port             = 0
+  }
 }
