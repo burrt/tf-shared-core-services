@@ -16,7 +16,7 @@ terraform {
 }
 
 module "consul" {
-  source = "git@github.com:burrt/AwsLambdaDotnetWebApi.git"
+  source = "github.com/burrt/AwsLambdaDotnetWebApi"
 }
 
 provider "aws" {
