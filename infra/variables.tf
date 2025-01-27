@@ -44,3 +44,5 @@ variable "sec-group-lambda-dotnet-web-api" {
   type          = string
   default       = ""
 }
+
+variable "lambda_dotnet_redis_user_password" {}
