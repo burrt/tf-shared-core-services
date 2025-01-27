@@ -36,6 +36,33 @@ resource "aws_elasticache_subnet_group" "shared-redis-cache-subnet-group" {
   ]
 }
 
+resource "aws_elasticache_user" "web-api-lambda-user" {
+  user_id       = "web-api-lambda-user"
+  user_name     = "web-api-lambda-user"
+  access_string = "on ~* -@all +@connection +@fast +@slow +@scripting +@read +@write"
+  engine        = "REDIS"
+  authentication_mode {
+    type = "password"
+  }
+}
+
+resource "aws_elasticache_user" "restricted-default-user" {
+  user_id               = "restricted-default-user"
+  user_name             = "default"
+  access_string         = "off ~* -@all"
+  engine                = "REDIS"
+  no_password_required  = true
+}
+
+resource "aws_elasticache_user_group" "shared-redis-user-group" {
+  engine        = "REDIS"
+  user_group_id = "shared-redis-user-group-id"
+  user_ids      = [
+    aws_elasticache_user.web-api-lambda-user.user_id,
+    aws_elasticache_user.restricted-default-user.user_id
+  ]
+}
+
 resource "aws_elasticache_replication_group" "shared-redis-cluster-group" {
   replication_group_id        = "shared-redis-cluster-group"
   description                 = "Redis cluster for high availability"
@@ -52,6 +79,7 @@ resource "aws_elasticache_replication_group" "shared-redis-cluster-group" {
   auto_minor_version_upgrade  = true
   at_rest_encryption_enabled  = true
   transit_encryption_enabled  = true
-  security_group_ids          = [aws_security_group.elasticache-redis-traffic-sg.id]
   subnet_group_name           = aws_elasticache_subnet_group.shared-redis-cache-subnet-group.name
+  security_group_ids          = [aws_security_group.elasticache-redis-traffic-sg.id]
+  user_group_ids              = [aws_elasticache_user_group.shared-redis-user-group.user_group_id]
 }

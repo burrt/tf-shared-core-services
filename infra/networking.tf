@@ -31,25 +31,27 @@ resource "aws_route_table_association" "public-route-subnet-2" {
 
 # Subnets
 output "subnet_public_1_id" {
-  description = "The ID of the public 1 subnet"
   value       = aws_subnet.main-subnet-public1.id
 }
 output "subnet_public_2_id" {
-  description = "The ID of the public 2 subnet"
   value       = aws_subnet.main-subnet-public2.id
 }
 output "subnet_private_1_id" {
-  description = "The ID of the private 1 subnet"
   value       = aws_subnet.main-subnet-private1.id
 }
 output "subnet_private_2_id" {
-  description = "The ID of the private 2 subnet"
   value       = aws_subnet.main-subnet-private2.id
 }
 
-output "ec2_jump_box_sg_id" {
+# Security Groups
+output "sec-group-ec2_jump_box" {
   description = "The ID of the EC2 Jump Box Security Group"
   value       = aws_security_group.ec2-jump-box-ssh-sg.id
+}
+
+output "sec-group-lambda-dotnet-web-api" {
+  description = "The ID of the .NET Lambda Web API Security Group"
+  value       = aws_security_group.lambda-dotnet-web-api-sg.id
 }
 
 ##############################
@@ -58,10 +60,10 @@ output "ec2_jump_box_sg_id" {
 
 # VPC
 resource "aws_vpc" "main-vpc" {
-  cidr_block = "10.0.0.0/16"
-  assign_generated_ipv6_cidr_block = true
-  enable_dns_support = true
-  enable_dns_hostnames = true
+  cidr_block                        = var.main_vpc_cidr
+  assign_generated_ipv6_cidr_block  = true
+  enable_dns_support                = true
+  enable_dns_hostnames              = true
 }
 
 # Subnets
@@ -106,15 +108,37 @@ resource "aws_security_group" "ec2-jump-box-ssh-sg" {
   }
 }
 
+resource "aws_security_group" "lambda-dotnet-web-api-sg" {
+  name                = "lambda-dotnet-web-api-sg"
+  description         = "Allow HTTPS inbound traffic and all outbound traffic"
+  vpc_id              = aws_vpc.main-vpc.id
+  ingress {
+    cidr_blocks       = [var.main_vpc_cidr]
+    protocol          = "tcp"
+    from_port         = 443
+    to_port           = 443
+  }
+  egress {
+    cidr_blocks       = ["0.0.0.0/0"]
+    ipv6_cidr_blocks  = ["::/0"]
+    protocol          = "-1" # semantically equivalent to all ports
+    from_port         = 0
+    to_port           = 0
+  }
+}
+
 resource "aws_security_group" "elasticache-redis-traffic-sg" {
   name                = "elasticache-redis-traffic-sg"
   description         = "Allow TCP 6379 inbound traffic and all outbound traffic"
   vpc_id              = aws_vpc.main-vpc.id
   ingress {
-    security_groups   = [aws_security_group.ec2-jump-box-ssh-sg.id]
     protocol          = "tcp"
     from_port         = 6379
     to_port           = 6379
+    security_groups   = [
+      aws_security_group.ec2-jump-box-ssh-sg.id,
+      aws_security_group.lambda-dotnet-web-api-sg.id
+    ]
   }
   egress {
     cidr_blocks       = ["0.0.0.0/0"]
