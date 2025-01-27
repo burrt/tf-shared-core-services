@@ -1,26 +1,5 @@
-terraform {
-  required_version = ">= 1.9.8"
-
-  cloud {
-    organization = "personal-burrt"
-    workspaces {
-      name = "shared-services"
-    }
-  }
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.76"
-    }
-  }
-}
-
 module "consul" {
   source = "github.com/burrt/AwsLambdaDotnetWebApi"
-}
-
-provider "aws" {
-  region = "ap-southeast-2"
 }
 
 ##############################
@@ -30,7 +9,7 @@ provider "aws" {
 resource "aws_elasticache_subnet_group" "shared-redis-cache-subnet-group" {
   name        = "shared-redis-cache-subnet-group"
   description = "Redis Cache Subnet Group"
-  subnet_ids  = [
+  subnet_ids = [
     aws_subnet.main-subnet-private1.id,
     aws_subnet.main-subnet-private2.id
   ]

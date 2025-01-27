@@ -1,12 +1,3 @@
-##############################
-# Output variables
-##############################
-
-output "vpc_id" {
-  description = "The ID of the created VPC"
-  value       = aws_vpc.main-vpc.id
-}
-
 # Route table for public traffic into EC2
 resource "aws_internet_gateway" "public-gateway" {
   vpc_id = aws_vpc.main-vpc.id
@@ -22,36 +13,11 @@ resource "aws_route_table" "public-routes" {
 
 resource "aws_route_table_association" "public-route-subnet-1" {
   route_table_id = aws_route_table.public-routes.id
-  subnet_id = aws_subnet.main-subnet-public1.id
+  subnet_id      = aws_subnet.main-subnet-public1.id
 }
 resource "aws_route_table_association" "public-route-subnet-2" {
   route_table_id = aws_route_table.public-routes.id
-  subnet_id = aws_subnet.main-subnet-public2.id
-}
-
-# Subnets
-output "subnet_public_1_id" {
-  value       = aws_subnet.main-subnet-public1.id
-}
-output "subnet_public_2_id" {
-  value       = aws_subnet.main-subnet-public2.id
-}
-output "subnet_private_1_id" {
-  value       = aws_subnet.main-subnet-private1.id
-}
-output "subnet_private_2_id" {
-  value       = aws_subnet.main-subnet-private2.id
-}
-
-# Security Groups
-output "sec-group-ec2_jump_box" {
-  description = "The ID of the EC2 Jump Box Security Group"
-  value       = aws_security_group.ec2-jump-box-ssh-sg.id
-}
-
-output "sec-group-lambda-dotnet-web-api" {
-  description = "The ID of the .NET Lambda Web API Security Group"
-  value       = aws_security_group.lambda-dotnet-web-api-sg.id
+  subnet_id      = aws_subnet.main-subnet-public2.id
 }
 
 ##############################
@@ -90,21 +56,21 @@ resource "aws_subnet" "main-subnet-private2" {
 
 # Security Groups
 resource "aws_security_group" "ec2-jump-box-ssh-sg" {
-  name                = "ec2-jump-box-ssh-sg"
-  description         = "Allow SSH inbound traffic and all outbound traffic"
-  vpc_id              = aws_vpc.main-vpc.id
+  name        = "ec2-jump-box-ssh-sg"
+  description = "Allow SSH inbound traffic and all outbound traffic"
+  vpc_id      = aws_vpc.main-vpc.id
   ingress {
-    cidr_blocks       = [var.my_local_ip]
-    protocol          = "tcp"
-    from_port         = 22
-    to_port           = 22
+    cidr_blocks = [var.my_local_ip]
+    protocol    = "tcp"
+    from_port   = 22
+    to_port     = 22
   }
   egress {
-    cidr_blocks       = ["0.0.0.0/0"]
-    ipv6_cidr_blocks  = ["::/0"]
-    protocol          = "-1" # semantically equivalent to all ports
-    from_port         = 0
-    to_port           = 0
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+    protocol         = "-1" # semantically equivalent to all ports
+    from_port        = 0
+    to_port          = 0
   }
 }
 
@@ -141,10 +107,10 @@ resource "aws_security_group" "elasticache-redis-traffic-sg" {
     ]
   }
   egress {
-    cidr_blocks       = ["0.0.0.0/0"]
-    ipv6_cidr_blocks  = ["::/0"]
-    protocol          = "-1" # semantically equivalent to all ports
-    from_port         = 0
-    to_port           = 0
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+    protocol         = "-1" # semantically equivalent to all ports
+    from_port        = 0
+    to_port          = 0
   }
 }
