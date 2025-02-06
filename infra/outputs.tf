@@ -25,7 +25,7 @@ output "subnet_private_2_id" {
   value       = aws_subnet.main-subnet-private2.id
 }
 
-output "ec2_jump_box_sg_id" {
-  description = "The ID of the EC2 Jump Box Security Group"
-  value       = aws_security_group.ec2-jump-box-ssh-sg.id
+output "sec-group-lambda-dotnet-web-api" {
+  description = "The ID of the .NET Lambda Web API Security Group"
+  value       = aws_security_group.lambda-dotnet-web-api-sg.id
 }
