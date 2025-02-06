@@ -20,9 +20,9 @@ resource "aws_elasticache_user" "web-api-lambda-user" {
   user_name     = "web-api-lambda-user"
   access_string = "on ~* -@all +@connection +@fast +@slow +@scripting +@read +@write"
   engine        = "REDIS"
-  passwords     = [var.lambda_dotnet_redis_user_password, var.lambda_dotnet_redis_user_password]
   authentication_mode {
     type = "password"
+    passwords = [var.lambda_dotnet_redis_user_password, var.lambda_dotnet_redis_user_password]
   }
 }
 
